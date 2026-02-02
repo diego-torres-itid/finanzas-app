@@ -48,11 +48,11 @@ components/ui/
 
 ### Notas técnicas
 - **Colores principales:**
-  - Primary: `#22c55e` (verde)
-  - Secondary: `#8b5cf6` (morado)
+  - Primary: `#1A1A1A` (negro)
+  - Secondary: `#22C55E` (verde)
   - Background: `#ffffff`
-  - Text: `#1f2937`
-- **Fuentes:** Sistema por defecto + SpaceMono para números
+  - Text: `#1A1A1A`
+- **Fuentes:** Inter
 
 ---
 
