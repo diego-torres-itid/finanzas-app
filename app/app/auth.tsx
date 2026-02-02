@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
@@ -12,6 +12,13 @@ WebBrowser.maybeCompleteAuthSession();
 
 export default function AuthScreen() {
   const router = useRouter();
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (user) {
+      router.replace('/(tabs)');
+    }
+  }, [user, router]);
 
   const handleGoogleAuth = async () => {
     try {
@@ -48,11 +55,17 @@ export default function AuthScreen() {
         throw new Error('Tokens inválidos');
       }
 
-      // Establecer sesión - el hook useAuth detectará automáticamente el cambio
-      // y manejará la navegación, creación de perfil, etc.
+      // Establecer sesión
       await supabase.auth.setSession({ access_token, refresh_token });
       
-      // La navegación se maneja automáticamente en useAuth
+      // Refrescar la sesión para asegurarse que se registre correctamente
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log('Session after setSession:', session?.user?.id);
+      
+      // Redirigir explícitamente a tabs si la sesión se estableció correctamente
+      if (session?.user) {
+        router.replace('/(tabs)');
+      }
     } catch (e) {
       console.error('Auth error:', e);
       Alert.alert('Error', 'No se pudo iniciar sesión con Google');

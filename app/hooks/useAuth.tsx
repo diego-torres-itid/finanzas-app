@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { useRouter, useSegments } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import type { AuthContextType, AuthState, UserProfile } from '@/types/auth';
 import { Session } from '@supabase/supabase-js';
@@ -14,9 +13,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     loading: true,
     initialized: false,
   });
-
-  const router = useRouter();
-  const segments = useSegments();
 
   // Cargar perfil del usuario desde Supabase
   const loadUserProfile = async (userId: string): Promise<UserProfile | null> => {
@@ -91,80 +87,121 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Listener de cambios de autenticación
   useEffect(() => {
+    let mounted = true;
+
     // Verificar sesión inicial
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      let profile: UserProfile | null = null;
-      
-      if (session?.user) {
-        // Intentar cargar o crear el perfil
-        profile = await loadUserProfile(session.user.id);
-        if (!profile) {
-          profile = await upsertUserProfile(session);
-        }
-      }
+    const initializeAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        console.log('Initial session:', session?.user?.id);
 
-      setAuthState({
-        user: session?.user ?? null,
-        profile,
-        session,
-        loading: false,
-        initialized: true,
-      });
-    });
-
-    // Escuchar cambios de autenticación
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('Auth event:', event);
-
-        let profile: UserProfile | null = null;
-
-        if (session?.user) {
-          // Cargar o crear perfil cuando el usuario se autentica
-          if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        if (mounted) {
+          let profile: UserProfile | null = null;
+          
+          if (session?.user) {
+            // Intentar cargar o crear el perfil
             profile = await loadUserProfile(session.user.id);
             if (!profile) {
               profile = await upsertUserProfile(session);
             }
-          } else {
-            profile = await loadUserProfile(session.user.id);
           }
+
+          setAuthState({
+            user: session?.user ?? null,
+            profile,
+            session,
+            loading: false,
+            initialized: true,
+          });
+        }
+      } catch (error) {
+        console.error('Error initializing auth:', error);
+        if (mounted) {
+          setAuthState(prev => ({
+            ...prev,
+            loading: false,
+            initialized: true,
+          }));
+        }
+      }
+    };
+
+    initializeAuth();
+
+    // Escuchar cambios de autenticación
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log('Auth event:', event, 'User:', session?.user?.id);
+
+        if (!mounted) return;
+
+        // Manejar logout
+        if (event === 'SIGNED_OUT') {
+          setAuthState({
+            user: null,
+            profile: null,
+            session: null,
+            loading: false,
+            initialized: true,
+          });
+          return;
         }
 
-        setAuthState({
-          user: session?.user ?? null,
-          profile,
-          session,
-          loading: false,
-          initialized: true,
-        });
+        // Para SIGNED_IN y otros eventos, cargar el perfil ANTES de actualizar el estado
+        if (session?.user) {
+          try {
+            let profile: UserProfile | null = null;
+            
+            // Intentar cargar perfil primero
+            profile = await loadUserProfile(session.user.id);
+            
+            // Si no existe, crear uno
+            if (!profile) {
+              profile = await upsertUserProfile(session);
+            }
+            
+            // Actualizar estado CON EL PERFIL CARGADO
+            if (mounted) {
+              setAuthState({
+                user: session.user ?? null,
+                profile,
+                session,
+                loading: false,
+                initialized: true,
+              });
+            }
+          } catch (profileError) {
+            console.warn('Error loading/creating profile:', profileError);
+            // En caso de error, actualizar solo el usuario
+            if (mounted) {
+              setAuthState(prev => ({
+                ...prev,
+                user: session.user ?? null,
+                session,
+                loading: false,
+                initialized: true,
+              }));
+            }
+          }
+        } else {
+          // Sin sesión, actualizar estado sin perfil
+          setAuthState(prev => ({
+            ...prev,
+            user: null,
+            profile: null,
+            session: null,
+            loading: false,
+            initialized: true,
+          }));
+        }
       }
     );
 
     return () => {
+      mounted = false;
       subscription.unsubscribe();
     };
   }, []);
-
-  // Protección de rutas y navegación automática
-  useEffect(() => {
-    if (!authState.initialized) return;
-
-    const inAuthGroup = segments[0] === '(tabs)';
-    const publicRoutes = ['welcome', 'onboarding', 'auth', '+not-found'];
-    const currentRoute = segments[0];
-
-    if (!authState.user && inAuthGroup) {
-      // Usuario no autenticado intentando acceder a rutas protegidas
-      router.replace('/auth');
-    } else if (authState.user) {
-      // Usuario autenticado
-      if (publicRoutes.includes(currentRoute as string)) {
-        // Está en ruta pública, redirigir a inicio
-        router.replace('/(tabs)');
-      }
-    }
-  }, [authState.user, authState.initialized, segments]);
 
   return (
     <AuthContext.Provider

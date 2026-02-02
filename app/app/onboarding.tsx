@@ -1,9 +1,10 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, useWindowDimensions, NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import Button from '@/components/ui/Button';
 import FadeIn from '@/components/animations/FadeIn';
+import { useAuth } from '@/hooks/useAuth';
 
 const slides = [
   {
@@ -25,9 +26,17 @@ const slides = [
 
 export default function OnboardingScreen() {
   const router = useRouter();
+  const { user } = useAuth();
   const listRef = useRef<FlatList>(null);
   const { width } = useWindowDimensions();
   const [index, setIndex] = useState(0);
+
+  // Si hay sesión activa, ir a index
+  useEffect(() => {
+    if (user) {
+      router.replace('/(tabs)');
+    }
+  }, [user, router]);
 
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const x = event.nativeEvent.contentOffset.x;

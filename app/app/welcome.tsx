@@ -1,12 +1,21 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import Button from '@/components/ui/Button';
 import Logo from '@/assets/images/logo.svg';
 import FadeIn from '@/components/animations/FadeIn';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function WelcomeScreen() {
   const router = useRouter();
+  const { user } = useAuth();
+
+  // Si hay sesión activa, ir a index
+  useEffect(() => {
+    if (user) {
+      router.replace('/(tabs)');
+    }
+  }, [user, router]);
 
   const handleContinue = async () => {
     // Guardar que ya vio la pantalla de bienvenida
