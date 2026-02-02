@@ -7,13 +7,12 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect, useState } from 'react';
-import { Text } from 'react-native';
+import { useEffect } from 'react';
+import { Text, View, ActivityIndicator } from 'react-native';
 import 'react-native-reanimated';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useRouter, useSegments } from 'expo-router';
 
 import { useColorScheme } from '@/components/useColorScheme';
+import { AuthProvider, useAuth } from '@/hooks/useAuth';
 
 export {
   ErrorBoundary,
@@ -48,52 +47,32 @@ export default function RootLayout() {
   return (
     // 🎁 AQUÍ ENVOLVEMOS con QueryClientProvider
     <QueryClientProvider client={queryClient}>
-      <RootLayoutNav />
+      <AuthProvider>
+        <RootLayoutNav />
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
-  const router = useRouter();
-  const segments = useSegments();
-  const [hasSeenWelcome, setHasSeenWelcome] = useState<boolean | null>(null);
+  const { initialized, loading } = useAuth();
 
-  useEffect(() => {
-    async function checkWelcomeStatus() {
-      try {
-        const value = await AsyncStorage.getItem('hasSeenWelcome');
-        setHasSeenWelcome(value === 'true');
-      } catch (error) {
-        console.error('Error checking welcome status:', error);
-        setHasSeenWelcome(false);
-      }
-    }
-    checkWelcomeStatus();
-  }, []);
-
-   useEffect(() => {
-     if (hasSeenWelcome === null) return; // Esperar a que cargue
-
-     const inWelcome = segments[0] === 'welcome';
-
-     if (hasSeenWelcome && inWelcome) {
-       // Ya vio el welcome, redirigir a tabs
-       router.replace('/welcome');
-     } else if (!hasSeenWelcome && !inWelcome) {
-       // No ha visto el welcome, redirigir
-       router.replace('/welcome');
-     }
-   }, [hasSeenWelcome, segments]);
-
-  if (hasSeenWelcome === null) {
-    return null; // Mostrar nada mientras carga
+  // Mostrar splash screen mientras se inicializa la autenticación
+  if (!initialized || loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#FFFFFF' }}>
+        <ActivityIndicator size="large" color="#007AFF" />
+      </View>
+    );
   }
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
         <Stack.Screen name="welcome" options={{ headerShown: false }} />
+        <Stack.Screen name="onboarding" options={{ headerShown: false }} />
+        <Stack.Screen name="auth" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
       </Stack>

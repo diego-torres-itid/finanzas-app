@@ -12,7 +12,7 @@ export default function WelcomeScreen() {
     // Guardar que ya vio la pantalla de bienvenida
     const AsyncStorage = await import('@react-native-async-storage/async-storage').then(m => m.default);
     await AsyncStorage.setItem('hasSeenWelcome', 'true');
-    router.replace('/(tabs)');
+    router.replace('/onboarding');
   };
 
   return (

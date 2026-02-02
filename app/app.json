@@ -1,21 +1,21 @@
 {
   "expo": {
-    "name": "Finanzas MX",
-    "slug": "finanzas-mx-app",
+    "name": "Kerdos",
+    "slug": "kerdos",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "finanzasmx",
+    "icon": "./assets/images/logo.svg",
+    "scheme": "kerdos",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/images/splash-icon.png",
+      "image": "./assets/images/logo.svg",
       "resizeMode": "contain",
       "backgroundColor": "#22c55e"
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.diegoistoes.finanzasmx",
+      "bundleIdentifier": "com.diegoistoes.kerdos",
       "infoPlist": {
         "UIBackgroundModes": [
           "remote-notification"
@@ -24,10 +24,10 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/logo.svg",
         "backgroundColor": "#22c55e"
       },
-      "package": "com.diegoistoes.finanzasmx",
+      "package": "com.diegoistoes.kerdos",
       "permissions": [
         "NOTIFICATIONS",
         "VIBRATE",
@@ -39,7 +39,7 @@
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/logo.svg"
     },
     "plugins": [
       "expo-router",
@@ -47,15 +47,15 @@
       [
         "expo-notifications",
         {
-          "icon": "./assets/images/notification-icon.png",
+          "icon": "./assets/images/logo.svg",
           "color": "#22c55e"
         }
       ],
       [
         "@sentry/react-native",
         {
-          "organization": "tu-organizacion",
-          "project": "finanzas-mx"
+          "organization": "diegoistoes",
+          "project": "kerdos"
         }
       ],
       [
@@ -79,7 +79,7 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "89530dd3-8a9c-46b5-afb7-9cee608cd91c"
+        "projectId": "369680f3-e47d-4b22-9b6b-9fc073b4d8d6"
       }
     },
     "owner": "diegoistoes"
