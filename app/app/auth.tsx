@@ -3,8 +3,12 @@ import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import * as AuthSession from 'expo-auth-session';
+import * as Linking from 'expo-linking';
 import FadeIn from '@/components/animations/FadeIn';
 import Logo from '@/assets/images/logo.svg';
+import GoogleIcon from '@/assets/images/google.svg';
+import FacebookIcon from '@/assets/images/facebook.svg';
+import AppleIcon from '@/assets/images/apple.svg';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -20,55 +24,108 @@ export default function AuthScreen() {
     }
   }, [user, router]);
 
+  // Escuchar deep links para el callback de OAuth
+  useEffect(() => {
+    let processing = false;
+    
+    const handleDeepLink = async (event: { url: string }) => {
+      console.log('🔗 Deep link recibido:', event.url);
+      
+      // Evitar procesar múltiples veces
+      if (processing) {
+        console.log('⏭️ Ya procesando un deep link, ignorando...');
+        return;
+      }
+      
+      // Verificar si es un callback de autenticación
+      if (event.url.includes('auth/callback')) {
+        processing = true;
+        
+        try {
+          // Extraer el fragmento de la URL (después del #)
+          const url = event.url;
+          const hashIndex = url.indexOf('#');
+          
+          if (hashIndex !== -1) {
+            const fragment = url.substring(hashIndex + 1);
+            const params = new URLSearchParams(fragment);
+            
+            const access_token = params.get('access_token');
+            const refresh_token = params.get('refresh_token');
+            
+            console.log('🎫 Access token encontrado:', access_token ? 'Sí' : 'No');
+            console.log('🔄 Refresh token encontrado:', refresh_token ? 'Sí' : 'No');
+            
+            if (access_token && refresh_token) {
+              console.log('⏳ Estableciendo sesión...');
+              
+              // Establecer la sesión con los tokens
+              const { data, error } = await supabase.auth.setSession({
+                access_token,
+                refresh_token,
+              });
+              
+              if (error) {
+                console.error('❌ Error estableciendo sesión:', error);
+                Alert.alert('Error', 'No se pudo completar el inicio de sesión');
+                processing = false;
+              } else {
+                console.log('✅ Sesión establecida exitosamente');
+                console.log('👤 Usuario:', data.session?.user.email);
+                // El hook useAuth detectará el cambio y redirigirá automáticamente
+                // No resetear processing aquí para que no se procese de nuevo
+              }
+            } else {
+              processing = false;
+            }
+          } else {
+            processing = false;
+          }
+        } catch (err) {
+          console.error('❌ Error procesando deep link:', err);
+          processing = false;
+        }
+      }
+    };
+
+    // Suscribirse a eventos de URL
+    const subscription = Linking.addEventListener('url', handleDeepLink);
+
+    // Limpiar el listener al desmontar
+    return () => {
+      subscription.remove();
+    };
+  }, [router]);
+
   const handleGoogleAuth = async () => {
     try {
-      const redirectTo = AuthSession.makeRedirectUri({ scheme: 'kerdos' });
+      // AuthSession.makeRedirectUri detecta automáticamente:
+      // - exp:// en Expo Go
+      // - kerdos:// en development build
+      const redirectTo = AuthSession.makeRedirectUri({
+        path: 'auth/callback',
+      });
+      console.log('Redirect URI:', redirectTo);
 
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo,
-          skipBrowserRedirect: true,
         },
       });
 
-      if (error || !data?.url) {
-        throw error || new Error('No se pudo iniciar el login con Google');
+      if (error) {
+        console.error('OAuth error:', error);
+        throw error;
       }
 
-      const result = await WebBrowser.openAuthSessionAsync(
-        data.url,
-        redirectTo
-      );
-
-      if (result.type !== 'success' || !result.url) {
-        return;
-      }
-
-      const hash = result.url.split('#')[1];
-      const query = hash || result.url.split('?')[1] || '';
-      const params = new URLSearchParams(query);
-      const access_token = params.get('access_token') ?? undefined;
-      const refresh_token = params.get('refresh_token') ?? undefined;
-
-      if (!access_token || !refresh_token) {
-        throw new Error('Tokens inválidos');
-      }
-
-      // Establecer sesión
-      await supabase.auth.setSession({ access_token, refresh_token });
-      
-      // Refrescar la sesión para asegurarse que se registre correctamente
-      const { data: { session } } = await supabase.auth.getSession();
-      console.log('Session after setSession:', session?.user?.id);
-      
-      // Redirigir explícitamente a tabs si la sesión se estableció correctamente
-      if (session?.user) {
-        router.replace('/(tabs)');
+      if (data?.url) {
+        console.log('Opening browser with URL:', data.url);
+        await WebBrowser.openBrowserAsync(data.url);
       }
     } catch (e) {
       console.error('Auth error:', e);
-      Alert.alert('Error', 'No se pudo iniciar sesión con Google');
+      Alert.alert('Error', (e as Error).message || 'No se pudo iniciar sesión con Google');
     }
   };
 
@@ -105,26 +162,26 @@ export default function AuthScreen() {
           onPress={handleGoogleAuth}
           activeOpacity={0.7}
         >
-          <Text style={styles.googleIcon}>🔵</Text>
+          <GoogleIcon width={24} height={24} style={styles.authIcon} />
           <Text style={styles.authButtonText}>Continuar con Google</Text>
         </TouchableOpacity>
 
         <TouchableOpacity 
-          style={styles.authButton}
+          style={[styles.authButton, styles.facebookButton]}
           onPress={handleFacebookAuth}
           activeOpacity={0.7}
         >
-          <Text style={styles.facebookIcon}>f</Text>
-          <Text style={styles.authButtonText}>Continuar con Facebook</Text>
+          <FacebookIcon width={24} height={24} style={styles.authIconWhite} />
+          <Text style={[styles.authButtonText, styles.authButtonTextWhite]}>Continuar con Facebook</Text>
         </TouchableOpacity>
 
         <TouchableOpacity 
-          style={styles.authButton}
+          style={[styles.authButton, styles.appleButton]}
           onPress={handleAppleAuth}
           activeOpacity={0.7}
         >
-          <Text style={styles.appleIcon}>🍎</Text>
-          <Text style={styles.authButtonText}>Continuar con Apple</Text>
+          <AppleIcon width={24} height={24} style={styles.authIconWhite} />
+          <Text style={[styles.authButtonText, styles.authButtonTextWhite]}>Continuar con Apple</Text>
         </TouchableOpacity>
       </FadeIn>
     </View>
@@ -177,33 +234,44 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderWidth: 1,
-    borderColor: '#E8E8E8',
-    borderRadius: 20,
-    marginBottom: 18,
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderWidth: 1.5,
+    borderColor: '#DADCE0',
+    borderRadius: 30,
+    marginBottom: 16,
     marginHorizontal: 24,
-    backgroundColor: '#fff',
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
   },
-  googleIcon: {
-    fontSize: 20,
+  authIcon: {
     marginRight: 12,
   },
-  facebookIcon: {
-    fontSize: 20,
-    marginRight: 12,
-    color: '#1877F2',
-    fontWeight: 'bold',
-  },
-  appleIcon: {
-    fontSize: 20,
+  authIconWhite: {
     marginRight: 12,
   },
   authButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1A1A1A',
+    color: '#3C4043',
+  },
+  authButtonTextWhite: {
+    color: '#FFFFFF',
+  },
+  facebookButton: {
+    backgroundColor: '#1877F2',
+    borderColor: '#1877F2',
+  },
+  appleButton: {
+    backgroundColor: '#000000',
+    borderColor: '#000000',
   },
   footer: {
     paddingBottom: 32,

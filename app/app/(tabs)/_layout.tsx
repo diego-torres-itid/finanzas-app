@@ -6,10 +6,27 @@ export default function TabLayout() {
     <Stack
       screenOptions={{
         headerShown: false,
+        animation: 'none', // Sin animación entre tabs
       }}
     >
-      <Stack.Screen name="index" />
-      <Stack.Screen name="two" />
+      <Stack.Screen 
+        name="index"
+        options={{
+          animation: 'none',
+        }}
+      />
+      <Stack.Screen 
+        name="two"
+        options={{
+          animation: 'none',
+        }}
+      />
+      <Stack.Screen 
+        name="profile"
+        options={{
+          animation: 'none',
+        }}
+      />
     </Stack>
   );
 }

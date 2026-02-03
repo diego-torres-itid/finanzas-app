@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, TouchableOpacity, StyleSheet, Text } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { usePathname, useRouter } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 
@@ -34,6 +35,7 @@ const navItems: NavbarItem[] = [
 export default function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
+  const insets = useSafeAreaInsets();
 
   const isActive = (href: string) => {
     if (href === '/(tabs)' && (pathname === '/(tabs)' || pathname.endsWith('/'))) {
@@ -43,7 +45,7 @@ export default function Navbar() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingBottom: Math.max(insets.bottom, 8) }]}>
       <View style={styles.navBar}>
         {navItems.map((item) => (
           <TouchableOpacity

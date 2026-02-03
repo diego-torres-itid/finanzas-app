@@ -1,7 +1,9 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import * as Progress from 'react-native-progress';
+import PressableScale from '../animations/PressableScale';
+import Colors from '@/constants/Colors';
 
 interface ModuleCardProps {
   id: string;
@@ -41,29 +43,24 @@ export default function ModuleCard({
 
   if (compact) {
     return (
-      <TouchableOpacity
-        style={styles.compactContainer}
-        onPress={onPress}
-        activeOpacity={0.7}
-      >
-        <View style={styles.compactIconContainer}>
-          <FontAwesome name={iconName} size={24} color="#007AFF" />
+      <PressableScale onPress={onPress}>
+        <View style={styles.compactContainer}>
+          <View style={styles.compactIconContainer}>
+            <FontAwesome name={iconName} size={24} color="#007AFF" />
+          </View>
+          <Text style={styles.compactTitle}>{title}</Text>
+          <Text style={styles.compactProgress}>
+            {lessonsCompleted}/{totalLessons}
+          </Text>
         </View>
-        <Text style={styles.compactTitle}>{title}</Text>
-        <Text style={styles.compactProgress}>
-          {lessonsCompleted}/{totalLessons}
-        </Text>
-      </TouchableOpacity>
+      </PressableScale>
     );
   }
 
   return (
-    <TouchableOpacity
-      style={styles.container}
-      onPress={onPress}
-      activeOpacity={0.7}
-    >
-      <View style={styles.header}>
+    <PressableScale onPress={onPress}>
+      <View style={styles.container}>
+        <View style={styles.header}>
         <View style={styles.iconContainer}>
           <FontAwesome name={iconName} size={32} color="#007AFF" />
           {isPremium && (
@@ -93,7 +90,7 @@ export default function ModuleCard({
           progress={progress}
           width={Dimensions.get('window').width - 80}
           height={6}
-          color="#52C41A"
+          color={Colors.light.primary}
           unfilledColor="#E8E8E8"
           borderRadius={3}
           borderWidth={0}
@@ -101,8 +98,9 @@ export default function ModuleCard({
         <Text style={styles.progressText}>
           {Math.round(progress * 100)}%
         </Text>
+        </View>
       </View>
-    </TouchableOpacity>
+    </PressableScale>
   );
 }
 
@@ -183,7 +181,7 @@ const styles = StyleSheet.create({
   progressText: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#52C41A',
+    color: Colors.light.primary,
     minWidth: 35,
   },
   // Compact styles

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
+import PressableScale from '../animations/PressableScale';
+import Colors from '@/constants/Colors';
 
 interface CalendarProps {
   onDateSelect?: (date: Date) => void;
@@ -135,20 +137,15 @@ export default function CalendarComponent({
   };
 
   const monthName = currentDate.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
-  const daysOfWeek = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+  const daysOfWeek = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
 
   if (weekView) {
     return (
       <View style={styles.weekContainer}>
         <View style={styles.weekGrid}>
           {weekDays.map((day, index) => (
-            <TouchableOpacity
+            <PressableScale
               key={index}
-              style={[
-                styles.weekDay,
-                day.isToday && styles.weekDayToday,
-                day.isActive && !day.isToday && styles.weekDayActive,
-              ]}
               onPress={() => {
                 if (onDateSelect) {
                   const selectedDate = new Date();
@@ -159,18 +156,26 @@ export default function CalendarComponent({
                 }
               }}
             >
-              <Text style={styles.weekDayLabel}>{daysOfWeek[index]}</Text>
-              <Text
+              <View
                 style={[
-                  styles.weekDayNumber,
-                  day.isToday && styles.weekDayNumberToday,
-                  day.isActive && !day.isToday && styles.weekDayNumberActive,
+                  styles.weekDay,
+                  day.isToday && styles.weekDayToday,
+                  day.isActive && !day.isToday && styles.weekDayActive,
                 ]}
               >
-                {day.date}
-              </Text>
-              {day.isActive && !day.isToday && <View style={styles.weekDayDot} />}
-            </TouchableOpacity>
+                <Text style={styles.weekDayLabel}>{daysOfWeek[index]}</Text>
+                <Text
+                  style={[
+                    styles.weekDayNumber,
+                    day.isToday && styles.weekDayNumberToday,
+                    day.isActive && !day.isToday && styles.weekDayNumberActive,
+                  ]}
+                >
+                  {day.date}
+                </Text>
+                {day.isActive && !day.isToday && <View style={styles.weekDayDot} />}
+              </View>
+            </PressableScale>
           ))}
         </View>
       </View>
@@ -216,7 +221,7 @@ export default function CalendarComponent({
         {days.map((day, index) => (
           <TouchableOpacity
             key={index}
-            style={[styles.day, getDayStyle(day)]}
+            style={styles.dayWrapper}
             onPress={() => {
               if (day.isCurrentMonth && onDateSelect) {
                 const selectedDate = new Date(
@@ -228,8 +233,11 @@ export default function CalendarComponent({
               }
             }}
             disabled={!day.isCurrentMonth}
+            activeOpacity={0.7}
           >
-            <Text style={[styles.dayText, getDayTextStyle(day)]}>{day.date}</Text>
+            <View style={[styles.day, getDayStyle(day)]}>
+              <Text style={[styles.dayText, getDayTextStyle(day)]}>{day.date}</Text>
+            </View>
           </TouchableOpacity>
         ))}
       </View>
@@ -281,12 +289,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
   },
-  day: {
+  dayWrapper: {
     width: '14.28%',
+    marginBottom: 8,
+  },
+  day: {
     aspectRatio: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 8,
   },
   dayDefault: {
     backgroundColor: 'transparent',
@@ -343,7 +353,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: 12,
-    paddingHorizontal: 6,
+    paddingHorizontal: 18,
     borderRadius: 12,
     backgroundColor: 'transparent',
   },
@@ -362,20 +372,20 @@ const styles = StyleSheet.create({
   weekDayNumber: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#52C41A',
+    color: Colors.light.primary,
     marginBottom: 6,
   },
   weekDayNumberToday: {
     color: '#FFFFFF',
   },
   weekDayNumberActive: {
-    color: '#52C41A',
+    color: Colors.light.primary,
   },
   weekDayDot: {
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: '#52C41A',
+    backgroundColor: Colors.light.primary,
   },
   // Compact styles
   compactContainer: {

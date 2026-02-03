@@ -1,5 +1,6 @@
 import React from 'react';
-import { TouchableOpacity, Text } from 'react-native';
+import { Text } from 'react-native';
+import PressableScale from '@/components/animations/PressableScale';
 
 type ButtonProps = {
   title?: string;
@@ -12,7 +13,7 @@ export default function Button({ title = 'Button', onPress, testID, variant = 'p
   const isPrimary = variant === 'primary';
   
   return (
-    <TouchableOpacity
+    <PressableScale
       testID={testID}
       onPress={onPress}
       className="self-stretch h-14 rounded-full items-center justify-center mx-4 my-2"
@@ -28,6 +29,6 @@ export default function Button({ title = 'Button', onPress, testID, variant = 'p
       >
         {title}
       </Text>
-    </TouchableOpacity>
+    </PressableScale>
   );
 }

@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FontAwesome } from '@expo/vector-icons';
 import Logo from '@/assets/images/logo.svg';
 
@@ -14,8 +15,10 @@ export default function Header({
   onNotificationPress,
   notificationCount = 0,
 }: HeaderProps) {
+  const insets = useSafeAreaInsets();
+  
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: Math.max(insets.top, 12) }]}>
       <View style={styles.leftContent}>
         <Logo width={32} height={32} style={styles.logo} />
         <Text style={styles.planText}>{planType}</Text>
@@ -45,7 +48,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingBottom: 12,
     backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
     borderBottomColor: '#F0F0F0',

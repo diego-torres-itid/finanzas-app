@@ -76,6 +76,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setAuthState(prev => ({ ...prev, profile }));
   };
 
+  // Actualizar perfil del usuario
+  const updateProfile = async (updates: Partial<UserProfile>): Promise<{ success: boolean; error?: string; code?: string }> => {
+    if (!authState.user) return { success: false, error: 'No authenticated user' };
+    
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .update({
+          ...updates,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', authState.user.id)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error updating profile:', error);
+        return { success: false, error: error.message, code: (error as { code?: string }).code };
+      }
+
+      setAuthState(prev => ({ ...prev, profile: data }));
+      return { success: true };
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      return { success: false, error: (error as Error).message };
+    }
+  };
+
   // Cerrar sesión
   const signOut = async () => {
     try {
@@ -209,6 +237,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         ...authState,
         signOut,
         refreshProfile,
+        updateProfile,
       }}
     >
       {children}

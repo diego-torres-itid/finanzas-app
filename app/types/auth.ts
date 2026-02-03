@@ -23,4 +23,5 @@ export interface AuthState {
 export interface AuthContextType extends AuthState {
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
+  updateProfile: (updates: Partial<UserProfile>) => Promise<{ success: boolean; error?: string; code?: string }>;
 }

@@ -1,6 +1,9 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
+import ArrowIcon from '@/assets/images/arrow.svg';
+import Colors from '@/constants/Colors';
+import PressableScale from '@/components/animations/PressableScale';
 
 interface DailyReflectionCardProps {
   onPress?: () => void;
@@ -16,32 +19,36 @@ export default function DailyReflectionCard({
   subtitle = 'Reflexiona sobre tus ganancias',
 }: DailyReflectionCardProps) {
   return (
-    <TouchableOpacity
-      style={[
-        styles.container,
-        completed && styles.containerCompleted,
-      ]}
-      onPress={onPress}
-      activeOpacity={0.7}
-    >
-      <View style={styles.header}>
-        <View style={styles.iconContainer}>
-          <FontAwesome 
-            name={completed ? 'check' : 'leaf'} 
-            size={24} 
-            color={completed ? '#4CAF50' : '#52C41A'}
-          />
-        </View>
-        <View style={styles.textContainer}>
-          <Text style={styles.title}>{title}</Text>
-          <Text style={styles.subtitle}>{subtitle}</Text>
-        </View>
-      </View>
+    <PressableScale onPress={onPress}>
+      <View style={styles.container}>
+        <View style={styles.content}>
+          <View style={styles.leftSection}>
+            <View style={styles.headerRow}>
+              <View style={styles.iconContainer}>
+                <FontAwesome 
+                  name="lightbulb-o" 
+                  size={15} 
+                  color="#FFFFFF"
+                />
+              </View>
+              <Text style={styles.label}>REFLEXIÓN DEL DÍA</Text>
+            </View>
+            <View style={styles.textSection}>
+              <Text style={styles.title}>{title}</Text>
+              <Text style={styles.subtitle}>{subtitle}</Text>
+            </View>
+          </View>
 
-      <View style={styles.arrow}>
-        <FontAwesome name="chevron-right" size={18} color="#999999" />
+          <View style={styles.rightIcon}>
+            <ArrowIcon 
+              width={20} 
+              height={20} 
+              color="#FFFFFF"
+            />
+          </View>
+        </View>
       </View>
-    </TouchableOpacity>
+    </PressableScale>
   );
 }
 
@@ -49,54 +56,65 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
-    padding: 16,
     marginHorizontal: 16,
     marginVertical: 12,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
+    shadowOpacity: 0.08,
     shadowRadius: 8,
-    elevation: 2,
-    borderLeftWidth: 4,
-    borderLeftColor: '#52C41A',
+    elevation: 3,
   },
-  containerCompleted: {
-    borderLeftColor: '#4CAF50',
-    backgroundColor: '#F6FFED',
+  content: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    padding: 16,
   },
-  header: {
+  leftSection: {
     flex: 1,
+    flexDirection: 'column',
+  },
+  headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: 8,
   },
   iconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
-    backgroundColor: '#F6FFED',
+    width: 28,
+    height: 28,
+    borderRadius: 10,
+    backgroundColor: Colors.light.primary,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
+    flexShrink: 0,
   },
-  textContainer: {
+  textSection: {
     flex: 1,
+  },
+  label: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#999999',
+    letterSpacing: 0.5,
   },
   title: {
     fontSize: 16,
     fontWeight: '700',
     color: '#1A1A1A',
-    marginBottom: 4,
+    marginBottom: 2,
   },
   subtitle: {
     fontSize: 13,
     color: '#666666',
     fontWeight: '400',
   },
-  arrow: {
-    marginLeft: 12,
-    opacity: 0.5,
+  rightIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: Colors.light.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

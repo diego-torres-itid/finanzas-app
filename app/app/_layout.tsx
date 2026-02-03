@@ -5,10 +5,10 @@ import "../global.css";
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
-import { Stack, useRouter, useSegments } from 'expo-router';
+import { Stack, Redirect, useSegments, useRootNavigationState } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
-import { Text, View, ActivityIndicator } from 'react-native';
+import { View, ActivityIndicator } from 'react-native';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/components/useColorScheme';
@@ -55,25 +55,19 @@ export default function RootLayout() {
 }
 
 function RootLayoutNav() {
-  const router = useRouter();
   const segments = useSegments();
+  const navigationState = useRootNavigationState();
   const colorScheme = useColorScheme();
   const { initialized, loading, user } = useAuth();
 
-  // Redirigir basado en el estado de autenticación
-  useEffect(() => {
-    if (!initialized || loading) return;
-
-    const inAuthGroup = segments[0] === '(tabs)';
-
-    if (!user && inAuthGroup) {
-      // Usuario no autenticado en área protegida -> redirigir a welcome
-      router.replace('/welcome');
-    } else if (user && !inAuthGroup) {
-      // Usuario autenticado en área pública -> redirigir a tabs
-      router.replace('/(tabs)');
-    }
-  }, [initialized, loading, user, segments]);
+  // Esperar a que la navegación esté lista
+  if (!navigationState?.key) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#FFFFFF' }}>
+        <ActivityIndicator size="large" color="#007AFF" />
+      </View>
+    );
+  }
 
   // Mostrar splash screen mientras se inicializa la autenticación
   if (!initialized || loading) {
@@ -84,6 +78,18 @@ function RootLayoutNav() {
     );
   }
 
+  // Determinar si estamos en área protegida
+  const inProtectedGroup = segments[0] === '(tabs)';
+
+  // Redirigir usando el componente Redirect
+  if (!user && inProtectedGroup) {
+    return <Redirect href="/welcome" />;
+  }
+
+  if (user && !inProtectedGroup) {
+    return <Redirect href="/(tabs)" />;
+  }
+
   // Si no hay usuario, mostrar solo las pantallas de auth
   // Si hay usuario, mostrar solo las pantallas autenticadas
   return (
@@ -92,8 +98,7 @@ function RootLayoutNav() {
         screenOptions={{ 
           headerShown: false,
           gestureEnabled: false,
-        }} 
-        key={user ? 'auth' : 'guest'}
+        }}
       >
         {user ? (
           // Usuario autenticado - solo mostrar tabs
@@ -116,12 +121,12 @@ function RootLayoutNav() {
               name="auth" 
               options={{ gestureEnabled: false }} 
             />
+            <Stack.Screen 
+              name="auth/callback" 
+              options={{ gestureEnabled: false }} 
+            />
           </>
         )}
-        <Stack.Screen 
-          name="modal" 
-          options={{ presentation: 'modal' }} 
-        />
       </Stack>
     </ThemeProvider>
   );

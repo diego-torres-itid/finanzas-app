@@ -4,12 +4,12 @@
     "slug": "kerdos",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/logo.svg",
+    "icon": "./assets/images/icon.png",
     "scheme": "kerdos",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/images/logo.svg",
+      "image": "./assets/images/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#22c55e"
     },
@@ -18,13 +18,27 @@
       "bundleIdentifier": "com.diegoistoes.kerdos",
       "infoPlist": {
         "UIBackgroundModes": [
+          "remote-notification",
           "remote-notification"
-        ]
+        ],
+        "CFBundleURLTypes": [
+          {
+            "CFBundleURLSchemes": [
+              "kerdos"
+            ]
+          },
+          {
+            "CFBundleURLSchemes": [
+              "kerdos"
+            ]
+          }
+        ],
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/logo.svg",
+        "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#22c55e"
       },
       "package": "com.diegoistoes.kerdos",
@@ -39,7 +53,7 @@
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/logo.svg"
+      "favicon": "./assets/images/icon.png"
     },
     "plugins": [
       "expo-router",
@@ -47,7 +61,7 @@
       [
         "expo-notifications",
         {
-          "icon": "./assets/images/logo.svg",
+          "icon": "./assets/images/icon.png",
           "color": "#22c55e"
         }
       ],

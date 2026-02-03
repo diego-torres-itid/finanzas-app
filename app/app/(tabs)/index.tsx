@@ -7,6 +7,7 @@ import CalendarComponent from '@/components/ui/CalendarComponent';
 import DailyReflectionCard from '@/components/ui/DailyReflectionCard';
 import ModuleCard from '@/components/ui/ModuleCard';
 import LogoutButton from '@/components/ui/LogoutButton';
+import Colors from '@/constants/Colors';
 
 // Datos de ejemplo - Estos vendrían de Supabase
 const MOCK_MODULES = [
@@ -86,8 +87,7 @@ export default function HomeScreen() {
 
           {/* Welcome Message */}
           <View style={styles.welcomeSection}>
-            <Text style={styles.welcomeTitle}>Bienvenido.</Text>
-            <Text style={styles.welcomeSubtitle}>Has completado 7 ✅</Text>
+            <Text style={styles.welcomeTitle}>Sabiduría Financiera</Text>
           </View>
 
           {/* Daily Reflection */}
@@ -204,7 +204,7 @@ const styles = StyleSheet.create({
   },
   seeAllLink: {
     fontSize: 14,
-    color: '#52C41A',
+    color: Colors.light.primary,
     fontWeight: '600',
   },
   bottomSpacing: {
